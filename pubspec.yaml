@@ -1,0 +1,24 @@
+name: adda
+description: আড্ডা - বাংলায় সোশ্যাল অ্যাপ (প্রোফাইল, পোস্ট, মেসেঞ্জার)
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+# "any" মানে flutter pub get আপনার Flutter-এর সাথে মানানসই সর্বশেষ ভার্সন নিয়ে নেবে।
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: any
+  firebase_auth: any
+  cloud_firestore: any
+  image_picker: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: any
+
+flutter:
+  uses-material-design: true

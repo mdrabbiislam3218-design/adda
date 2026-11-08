@@ -1,0 +1,11 @@
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+*.iml
+.idea/
+# অনলাইন বিল্ডে এগুলো নিজে নিজে তৈরি হয়
+android/
+lib/firebase_options.dart
+pubspec.lock

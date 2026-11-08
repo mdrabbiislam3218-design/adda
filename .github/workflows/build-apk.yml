@@ -1,0 +1,69 @@
+name: APK বানানো
+
+# রিপোজিটরিতে কিছু আপলোড করলে নিজে নিজে চলবে। Actions ট্যাব থেকে হাতেও চালানো যায়।
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: google-services.json আছে কিনা দেখা
+        run: |
+          if [ ! -f google-services.json ]; then
+            echo "google-services.json ফাইলটি রিপোজিটরির মূল ফোল্ডারে নেই।"
+            exit 1
+          fi
+
+      - name: Android প্রজেক্ট তৈরি
+        run: |
+          cp -r lib /tmp/lib_backup
+          flutter create --org com.adda --project-name adda --platforms=android .
+          cp -r /tmp/lib_backup/. lib/
+
+      - name: Firebase সেটিং তৈরি
+        run: python3 tool/make_firebase_options.py
+
+      - name: Firebase-এর জন্য minSdk ২৩ বা তার বেশি করা
+        run: |
+          for f in android/app/build.gradle android/app/build.gradle.kts; do
+            [ -f "$f" ] || continue
+            case "$f" in
+              *.kts) sed -i 's/flutter\.minSdkVersion/maxOf(23, flutter.minSdkVersion)/' "$f" ;;
+              *) sed -i 's/flutter\.minSdkVersion/Math.max(23, flutter.minSdkVersion)/' "$f" ;;
+            esac
+          done
+
+      - run: flutter pub get
+
+      - run: flutter build apk --release
+
+      - name: APK সংরক্ষণ
+        uses: actions/upload-artifact@v4
+        with:
+          name: adda-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Releases পেজে APK দেওয়া (ফোন থেকে সরাসরি ডাউনলোডের জন্য)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: আড্ডা APK (বিল্ড ${{ github.run_number }})
+          files: build/app/outputs/flutter-apk/app-release.apk

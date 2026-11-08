@@ -49,5 +49,22 @@ service cloud.firestore {
           && request.resource.data.from == request.auth.uid;
       }
     }
+
+    // স্টোরি: সবাই দেখতে পারবে, শুধু মালিক দিতে ও মুছতে পারবে
+    match /stories/{storyId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+    }
+
+    // বন্ধুর অনুরোধ: id = পাঠানোর uid + "_" + পাওয়ার uid
+    match /friendRequests/{reqId} {
+      allow read: if signedIn()
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.from == request.auth.uid;
+      allow update: if signedIn() && resource.data.to == request.auth.uid;
+      allow delete: if signedIn()
+        && (resource.data.from == request.auth.uid || resource.data.to == request.auth.uid);
+    }
   }
 }

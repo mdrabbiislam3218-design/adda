@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../widgets/avatar.dart';
 import '../widgets/post_card.dart';
+import '../widgets/friends_section.dart';
+import '../widgets/stories_bar.dart';
 import 'create_post_screen.dart';
+import 'people_screen.dart';
 
 /// সবার পোস্টের ফিড
 class FeedScreen extends StatefulWidget {
@@ -30,15 +33,26 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF0F2F5),
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
         title: const Text(
           'আড্ডা',
           style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
             color: Color(0xFF1877F2),
           ),
         ),
+        actions: [
+          _roundIcon(Icons.add, () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CreatePostScreen()))),
+          _roundIcon(Icons.search, () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PeopleScreen()))),
+          const SizedBox(width: 8),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: _stream,
@@ -56,10 +70,20 @@ class _FeedScreenState extends State<FeedScreen> {
           }
           final docs = snap.data!.docs;
           return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: EdgeInsets.zero,
             itemCount: docs.length + 1,
             itemBuilder: (context, i) {
-              if (i == 0) return const _Composer();
+              if (i == 0) {
+                return const Column(
+                  children: [
+                    _Composer(),
+                    SizedBox(height: 8),
+                    StoriesBar(),
+                    SizedBox(height: 8),
+                    FriendsSection(),
+                  ],
+                );
+              }
               return PostCard(doc: docs[i - 1]);
             },
           );
@@ -82,8 +106,8 @@ class _Composer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final me = FirebaseAuth.instance.currentUser?.uid ?? '';
-    return Card(
-      margin: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+    return Container(
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
@@ -117,4 +141,20 @@ class _Composer extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _roundIcon(IconData icon, VoidCallback onTap) {
+  return Padding(
+    padding: const EdgeInsets.only(left: 8),
+    child: InkResponse(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: const BoxDecoration(
+            shape: BoxShape.circle, color: Color(0xFFE4E6EB)),
+        child: Icon(icon, color: Colors.black87),
+      ),
+    ),
+  );
 }
